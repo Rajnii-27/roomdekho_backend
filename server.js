@@ -9,25 +9,19 @@ const app = express();
 // Load environment variables
 dotenv.config();
 
-// ✅ CORS (only allow your Netlify frontend)
-// ✅ Allow multiple origins
+// ✅ CORS (allow multiple origins)
 const allowedOrigins = [
-  "https://roomdekhoo.netlify.app", // Production frontend
-  "http://localhost:5173"           // Local Vite dev server
+  "https://roomdekhoo.netlify.app",
+  "http://localhost:5173"
 ];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+    else callback(new Error("Not allowed by CORS"));
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
-
 
 
 // Middleware
@@ -56,7 +50,15 @@ app.get('/', (req, res) => {
   res.send('✅ RoomDekho backend is running');
 });
 
-// ✅ Vercel fix: do NOT bind to 'localhost'
+// ✅ Run locally OR export for Vercel
 const PORT = process.env.PORT || 5000;
 
-module.exports = app;
+// If run directly with `node server.js`, start listening
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+  });
+} else {
+  // If required/imported (like Vercel does), export the app
+  module.exports = app;
+}
